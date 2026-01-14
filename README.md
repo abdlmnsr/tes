@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oedjang POS - Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f4f7fa;
+            --sidebar: #1e293b;
+            --accent: #10b981; /* Emerald Green */
+            --primary: #3b82f6; /* Modern Blue */
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #1e293b;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            background: var(--bg-body); 
+            color: var(--text-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* HEADER */
+        .top-bar {
+            background: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-bar h1 { margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--sidebar); }
+        .top-bar span { font-size: 0.8rem; background: var(--accent); color: white; padding: 4px 8px; border-radius: 20px; }
+
+        .container {
+            max-width: 1300px;
+            margin: 1.5rem auto;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 1.5rem;
+            padding: 0 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .container { grid-template-columns: 1fr; }
+            .col-checkout { order: -1; }
+        }
+
+        section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        h2 { 
+            margin-top: 0; 
+            font-size: 1rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em; 
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+        }
+
+        /* INPUTS */
+        label { font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px; }
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        input:focus, select:focus { border-color: var(--primary); ring: 2px solid #3b82f633; }
+
+        /* BUTTONS */
+        button {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-accent { background: var(--accent); color: white; width: 100%; }
+        .btn-outline { background: transparent; border: 1.5px solid #e2e8f0; color: #64748b; }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        
+        button:active { transform: scale(0.98); }
+
+        /* CART LIST */
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .cart-item:last-child { border-bottom: none; }
+        .cart-info b { display: block; font-size: 0.95rem; }
+        .cart-info span { font-size: 0.8rem; color: #64748b; }
+
+        .total-display {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .total-amount { font-size: 2rem; font-weight: 800; color: var(--accent); }
+
+        /* TABLE CUSTOM */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #f1f5f9; color: #64748b; font-size: 0.85rem; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+
+        /* MODAL STRUK */
+        #modalStruk {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            padding: 1rem;
+        }
+
+        .struk-card {
+            background: white;
+            max-width: 380px;
+            margin: 2rem auto;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        .struk-card::after {
+            content: ""; position: absolute; bottom: -10px; left: 0; width: 100%; height: 20px;
+            background: radial-gradient(circle, white 5px, transparent 6px);
+            background-size: 15px 20px;
+        }
+
+        /* UTILS */
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; }
+        .badge-stock { background: #dcfce7; color: #166534; }
+        .badge-time { background: #f1f5f9; color: #475569; }
+
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <h1>ANGKRINGAN  <span style="background:none; color:var(--primary); padding:0">OEDJANG</span></h1>
+    <span>EST.2026</span>
+</div>
+
+<div class="container">
+    <div class="col-left">
+        <section>
+            <h2>📦 Management Menu</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                <div>
+                    <label>Nama Produk</label>
+                    <input type="text" id="pName" placeholder="Contoh: Sate Usus">
+                </div>
+                <div>
+                    <label>Harga</label>
+                    <input type="number" id="pPrice" placeholder="0">
+                </div>
+                <div>
+                    <label>Stok</label>
+                    <input type="number" id="pStock" placeholder="0">
+                </div>
+            </div>
+            <input type="hidden" id="editIndex">
+            <button class="btn-primary" onclick="simpanProduk()">💾 Simpan Ke Database</button>
+
+            <div class="table-responsive" style="margin-top: 1.5rem;">
+                <table>
+                    <thead>
+                        <tr><th>Produk</th><th>Stok</th><th style="text-align:right">Aksi</th></tr>
+                    </thead>
+                    <tbody id="bodyProduk"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2>📜 Transaksi Terakhir</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr><th>Waktu</th><th>Pelanggan</th><th style="text-align:right">Total</th></tr>
+                    </thead>
+                    <tbody id="bodyRiwayat"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-checkout">
+        <section style="position: sticky; top: 100px;">
+            <h2>🛒 Kasir Penjualan</h2>
+            <label>Nama Pelanggan</label>
+            <input type="text" id="custName" placeholder="Umum">
+            
+            <label>Pilih Menu</label>
+            <select id="pilihProduk" style="height: 50px; font-weight: 600;"></select>
+            
+            <label>Jumlah</label>
+            <input type="number" id="qtyBeli" placeholder="1" value="1">
+            
+            <button class="btn-primary" onclick="tambahKeKeranjang()" style="background: var(--sidebar);">+ Tambah Pesanan</button>
+
+            <div id="boxKeranjang" style="margin-top: 1.5rem; display: none;">
+                <h3 style="font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px;">Daftar Belanja</h3>
+                <div id="listKeranjang"></div>
+                
+                <div class="total-display">
+                    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">TOTAL BAYAR</span>
+                    <div class="total-amount" id="displayTotal">Rp 0</div>
+                </div>
+                
+                <button class="btn-accent" id="btnProses" onclick="prosesPembayaran()" style="margin-top: 1rem;">SELESAIKAN PEMBAYARAN</button>
+            </div>
+        </section>
+
+        <section>
+            <h2>📊 Ringkasan Laba</h2>
+            <div id="rekapHarian"></div>
+            <button class="btn-outline" onclick="exportKeExcel()" style="width: 100%; margin-top: 10px;">📊 Download .CSV (Excel)</button>
+        </section>
+    </div>
+</div>
+
+<div id="modalStruk">
+    <div class="struk-card">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h1 style="margin:0; font-size: 1.2rem;">ANGKRINGAN OEDJANG</h1>
+            <p style="font-size: 0.7rem; color: #64748b; margin: 4px 0;">Struk Digital Resmi</p>
+            <div id="sWaktu" class="badge badge-time" style="margin-top: 5px; display: inline-block;"></div>
+        </div>
+        
+        <div id="sPelanggan" style="font-size: 0.8rem; font-weight: bold; margin-bottom: 10px;"></div>
+        <div id="sItems" style="border-top: 1px dashed #e2e8f0; padding-top: 10px;"></div>
+        
+        <div style="display:flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #f1f5f9; font-weight: 800;">
+            <span>TOTAL</span>
+            <span id="sTotal" style="color: var(--accent)"></span>
+        </div>
+
+        <button class="btn-accent" onclick="kirimWA()" style="margin-top: 1.5rem; background: #25D366;">📱 Kirim ke WhatsApp</button>
+        <button class="btn-outline" onclick="tutupModal()" style="width: 100%; margin-top: 10px;">Tutup</button>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzQ3SrxGesTK8STS3pq9qJ7Q7cuBT78ax8XlNignUMNu4sOm_V7vgFCm9It0q2ad6f7Bw/exec';
+    const noWA = '088215953809';
+
+    let listProduk = JSON.parse(localStorage.getItem('produk_oedjang')) || [];
+    let riwayat = JSON.parse(localStorage.getItem('riwayat_oedjang')) || [];
+    let keranjang = [];
+    let strukAktif = null;
+
+    function simpanProduk() {
+        const n = document.getElementById('pName').value, h = parseInt(document.getElementById('pPrice').value), s = parseInt(document.getElementById('pStock').value), editIdx = document.getElementById('editIndex').value;
+        if(!n || isNaN(h) || isNaN(s)) return alert("Isi semua data menu!");
+        if(editIdx === "") { listProduk.push({ nama: n, harga: h, stok: s }); } else { listProduk[editIdx] = { nama: n, harga: h, stok: s }; document.getElementById('editIndex').value = ""; }
+        refreshUI(); bersihkanInput(['pName', 'pPrice', 'pStock']);
+    }
+
+    function editItem(i) {
+        document.getElementById('pName').value = listProduk[i].nama; document.getElementById('pPrice').value = listProduk[i].harga;
+        document.getElementById('pStock').value = listProduk[i].stok; document.getElementById('editIndex').value = i;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hapusProduk(i) { if (confirm("Hapus menu ini?")) { listProduk.splice(i, 1); refreshUI(); } }
+
+    function exportKeExcel() {
+        if (riwayat.length === 0) return alert("Belum ada data.");
+        let csv = "Tanggal,Jam,Pelanggan,Items,Total\n" + riwayat.map(r => `${r.tanggal},${r.jam},${r.customer},"${r.items}",${r.total}`).join("\n");
+        const link = document.createElement("a");
+        link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
+        link.download = `Laporan_Oedjang_${new Date().toLocaleDateString()}.csv`;
+        link.click();
+    }
+
+    function tambahKeKeranjang() {
+        const idx = document.getElementById('pilihProduk').value, q = parseInt(document.getElementById('qtyBeli').value);
+        if(idx === "" || isNaN(q) || q <= 0) return;
+        if(listProduk[idx].stok < q) return alert("Stok tidak cukup!");
+        keranjang.push({ pIdx: idx, nama: listProduk[idx].nama, harga: listProduk[idx].harga, qty: q, subtotal: listProduk[idx].harga * q });
+        renderKeranjang(); document.getElementById('qtyBeli').value = "1";
+    }
+
+    function renderKeranjang() {
+        const box = document.getElementById('boxKeranjang'), list = document.getElementById('listKeranjang');
+        let total = 0; if(keranjang.length === 0) { box.style.display = "none"; return; }
+        box.style.display = "block"; list.innerHTML = "";
+        keranjang.forEach((item, i) => {
+            total += item.subtotal;
+            list.innerHTML += `
+                <div class="cart-item">
+                    <div class="cart-info"><b>${item.nama}</b><span>${item.qty} x Rp ${item.harga.toLocaleString()}</span></div>
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <b>Rp ${item.subtotal.toLocaleString()}</b>
+                        <button class="btn-danger" style="padding:5px 8px; border-radius:5px" onclick="keranjang.splice(${i},1);renderKeranjang();">×</button>
+                    </div>
+                </div>`;
+        });
+        document.getElementById('displayTotal').innerText = "Rp " + total.toLocaleString();
+    }
+
+    async function prosesPembayaran() {
+        const cust = document.getElementById('custName').value || "Umum";
+        const btn = document.getElementById('btnProses');
+        btn.innerText = "Processing..."; btn.disabled = true;
+        const skrg = new Date();
+        const tgl = `${skrg.getDate().toString().padStart(2,'0')}/${(skrg.getMonth()+1).toString().padStart(2,'0')}/${skrg.getFullYear()}`;
+        const jam = `${skrg.getHours().toString().padStart(2,'0')}:${skrg.getMinutes().toString().padStart(2,'0')}`;
+        let totalFinal = 0;
+        let detailItems = keranjang.map(k => {
+            totalFinal += k.subtotal;
+            listProduk[k.pIdx].stok -= k.qty;
+            return { nama: k.nama, qty: k.qty, sub: k.subtotal };
+        });
+        strukAktif = { tgl, jam, customer: cust, items: detailItems, total: totalFinal };
+        const payload = { tanggal: tgl, jam: jam, customer: cust, items: detailItems.map(d=>`${d.nama}(${d.qty})`).join(", "), total: totalFinal };
+        riwayat.push(payload);
+        try { fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (e) {}
+        keranjang = []; document.getElementById('custName').value = "";
+        btn.innerText = "SELESAIKAN PEMBAYARAN"; btn.disabled = false;
+        renderKeranjang(); refreshUI(); tampilkanStruk();
+    }
+
+    function tampilkanStruk() {
+        document.getElementById('sWaktu').innerText = `${strukAktif.tgl} | ${strukAktif.jam}`;
+        document.getElementById('sPelanggan').innerText = `Pelanggan: ${strukAktif.customer}`;
+        document.getElementById('sItems').innerHTML = strukAktif.items.map(it => `
+            <div style="display:flex; justify-content:between; font-size:0.85rem; margin-bottom:5px">
+                <span style="flex:1">${it.nama} (x${it.qty})</span>
+                <span>Rp ${it.sub.toLocaleString()}</span>
+            </div>`).join("");
+        document.getElementById('sTotal').innerText = `Rp ${strukAktif.total.toLocaleString()}`;
+        document.getElementById('modalStruk').style.display = "block";
+    }
+
+    function kirimWA() {
+        let teks = `*STRUK DIGITAL ANGKRINGAN OEDJANG*\n--------------------------------\nWaktu: ${strukAktif.tgl} ${strukAktif.jam}\nCustomer: ${strukAktif.customer}\n--------------------------------\n`;
+        strukAktif.items.forEach(it => { teks += `${it.nama} x${it.qty} = Rp ${it.sub.toLocaleString()}\n`; });
+        teks += `--------------------------------\n*TOTAL: Rp ${strukAktif.total.toLocaleString()}*\n--------------------------------\nTerima kasih!`;
+        window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(teks)}`, '_blank');
+    }
+
+    function tutupModal() { document.getElementById('modalStruk').style.display = "none"; }
+
+    function refreshUI() {
+        localStorage.setItem('produk_oedjang', JSON.stringify(listProduk));
+        localStorage.setItem('riwayat_oedjang', JSON.stringify(riwayat));
+        const bProd = document.getElementById('bodyProduk'), selProd = document.getElementById('pilihProduk');
+        bProd.innerHTML = ""; selProd.innerHTML = '<option value="">-- Pilih Menu --</option>';
+        listProduk.forEach((p, i) => {
+            bProd.innerHTML += `<tr><td><b>${p.nama}</b><br><span style="color:var(--primary)">Rp ${p.harga.toLocaleString()}</span></td><td><span class="badge badge-stock">${p.stok}</span></td><td style="text-align:right"><button class="btn-outline" style="display:inline-block; padding:5px 10px" onclick="editItem(${i})">Edit</button> <button class="btn-danger" style="display:inline-block; padding:5px 10px" onclick="hapusProduk(${i})">×</button></td></tr>`;
+            selProd.innerHTML += `<option value="${i}">${p.nama} (Stok: ${p.stok})</option>`;
+        });
+        const bRiw = document.getElementById('bodyRiwayat'), rekArea = document.getElementById('rekapHarian');
+        bRiw.innerHTML = ""; rekArea.innerHTML = ""; let rekapMap = {};
+        riwayat.slice().reverse().forEach((r, i) => {
+            if(i < 5) bRiw.innerHTML += `<tr><td><span class="badge badge-time">${r.jam}</span></td><td><b>${r.customer}</b></td><td style="text-align:right">Rp ${r.total.toLocaleString()}</td></tr>`;
+            rekapMap[r.tanggal] = (rekapMap[r.tanggal] || 0) + r.total;
+        });
+        Object.keys(rekapMap).reverse().forEach(tgl => {
+            rekArea.innerHTML += `<div class="rekap-card"><span>📅 ${tgl}</span> <b style="color:var(--accent)">Rp ${rekapMap[tgl].toLocaleString()}</b></div>`;
+        });
+    }
+
+    function bersihkanInput(ids) { ids.forEach(id => document.getElementById(id).value = ""); }
+    refreshUI();
+</script>
+</body>
+</html>
